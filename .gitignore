@@ -1,0 +1,82 @@
+# Environment variables (contains API keys and passwords)
+.env
+.env.local
+.env.production
+
+# Database files (personal job data)
+*.db
+*.sqlite
+*.sqlite3
+*.db.backup
+
+# Resume files (personal data)
+data/resume/
+data/jobs/
+data/*.json
+
+# Log files
+logs/
+*.log
+
+# Python cache and bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CSV files
+*.CSV
+*.xls

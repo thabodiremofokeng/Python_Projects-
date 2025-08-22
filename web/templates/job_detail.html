@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Job Details - {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ job.title }}</h3>
+                    <h5 class="text-muted">{{ job.company }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Location:</strong> {{ job.location or 'Remote' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Job Type:</strong> {{ job.job_type or 'Full-time' }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Experience Level:</strong> {{ job.experience_level or 'Mid Level' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Posted:</strong> {{ job.posted_date or 'Recently' }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6><strong>Job Description:</strong></h6>
+                        <div class="border p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                            {{ job.description | safe if job.description else 'No description available.' }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6><strong>Requirements:</strong></h6>
+                        <div class="border p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
+                            {{ job.requirements | safe if job.requirements else 'No requirements listed.' }}
+                        </div>
+                    </div>
+
+                    {% if job.url %}
+                    <div class="mb-4">
+                        <h6><strong>View Original Job:</strong></h6>
+                        <div class="d-flex gap-2">
+<a href="{{ job.url }}" target="_blank" class="btn btn-primary" style="background-color: {{ job.source_color }};">
+<i class="{{ job.source_icon }}" aria-hidden="true"></i> View Job on {{ job.source }}
+</a>
+                            <button class="btn btn-outline-secondary" onclick="copyJobUrl('{{ job.url }}')">
+                                <i class="fas fa-copy" aria-hidden="true"></i> Copy Link
+                            </button>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Opens in a new tab</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Compatibility Score -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Compatibility Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if job.compatibility_score %}
+                    <div class="text-center mb-3">
+                        <div class="display-4 {% if job.compatibility_score >= 70 %}text-success{% elif job.compatibility_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ job.compatibility_score }}%
+                        </div>
+                        <small class="text-muted">Compatibility Score</small>
+                    </div>
+                    
+                    {% if job.match_reason %}
+                    <div class="mb-3">
+                        <h6>Why This Matches:</h6>
+                        <p class="small">{{ job.match_reason }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if job.skill_gaps %}
+                    <div class="mb-3">
+                        <h6>Skill Gaps:</h6>
+                        <div class="small">{{ job.skill_gaps }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if job.recommendations %}
+                    <div class="mb-3">
+                        <h6>Recommendations:</h6>
+                        <div class="small">{{ job.recommendations }}</div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No compatibility analysis available.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Application Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Apply for This Job</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('apply_job', job_id=job.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", rows="3", placeholder="Add any notes or customizations for this application...") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.generate_cover_letter(class="form-check-input") }}
+                                {{ form.generate_cover_letter.label(class="form-check-label") }}
+                            </div>
+                            <small class="form-text text-muted">Generate a custom cover letter using AI</small>
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('jobs') }}" class="btn btn-outline-secondary btn-sm">← Back to Jobs</a>
+                        {% if job.url %}
+                        <a href="{{ job.url }}" target="_blank" class="btn btn-outline-info btn-sm">View Original Post</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyJobUrl(url) {
+    if (navigator.clipboard && window.isSecureContext) {
+        // Use the modern Clipboard API when available
+        navigator.clipboard.writeText(url).then(function() {
+            // Show temporary success message
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-outline-secondary');
+            
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+            fallbackCopyJobUrl(url);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyJobUrl(url);
+    }
+}
+
+function fallbackCopyJobUrl(url) {
+    // Create a temporary textarea element
+    const textArea = document.createElement('textarea');
+    textArea.value = url;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-outline-secondary');
+            
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        } else {
+            throw new Error('Copy command failed');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed: ', err);
+        // Show URL in a prompt as final fallback
+        prompt('Copy this URL:', url);
+    }
+    
+    document.body.removeChild(textArea);
+}
+</script>
+{% endblock %}

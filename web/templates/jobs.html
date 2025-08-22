@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Job Matches - Auto Job Application{% endblock %}
+{% block header %}Job Matches{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% if jobs %}
+            <p class="text-muted mb-4">Found {{ jobs|length }} job matches sorted by compatibility score</p>
+            
+            {% for job in jobs %}
+            <div class="job-card card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title mb-2">{{ job.title }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-building"></i> {{ job.company }}
+                                {% if job.location %}
+                                <span class="ms-3">
+                                    <i class="bi bi-geo-alt"></i> {{ job.location }}
+                                </span>
+                                {% endif %}
+                                {% if job.salary %}
+                                <span class="ms-3">
+                                    <i class="bi bi-cash"></i> {{ job.salary }}
+                                </span>
+                                {% endif %}
+                            </p>
+                            
+                            {% if job.overall_assessment %}
+                            <p class="card-text">{{ job.overall_assessment }}</p>
+                            {% endif %}
+                            
+                            <!-- Match Reasons -->
+                            {% if job.match_reasons %}
+                            <div class="mb-2">
+                                <strong class="text-success">Why it matches:</strong>
+                                <ul class="list-unstyled ms-3">
+                                    {% for reason in job.match_reasons[:2] %}
+                                    <li><i class="bi bi-check-circle text-success"></i> {{ reason }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 text-end">
+                            <!-- Compatibility Score -->
+                            <div class="compatibility-score {{ 'score-excellent' if job.compatibility_score >= 90 else 'score-good' if job.compatibility_score >= 70 else 'score-moderate' if job.compatibility_score >= 50 else 'score-weak' }} mb-2">
+                                {{ job.compatibility_score }}/100
+                            </div>
+                            
+                            <!-- Status Badges -->
+                            <div class="mb-3">
+                                {% if job.recommended_application %}
+                                    <span class="badge bg-success mb-1">Recommended</span>
+                                {% else %}
+                                    <span class="badge bg-secondary mb-1">Not Recommended</span>
+                                {% endif %}
+                                
+                                {% if job.application_status %}
+                                    <span class="badge bg-info mb-1">{{ job.application_status.title() }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="d-grid gap-1">
+                                <a href="{{ url_for('job_detail', job_id=job.id) }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                
+                                {% if not job.application_status and job.recommended_application %}
+                                <form action="{{ url_for('apply_job', job_id=job.id) }}" method="post" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <input type="hidden" name="notes" value="Quick application from job list">
+                                    <input type="hidden" name="generate_cover_letter" value="y">
+                                    <button type="submit" class="btn btn-success btn-sm w-100">
+                                        <i class="bi bi-send"></i> Quick Apply
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                {% if job.url %}
+<a href="{{ job.url }}" target="_blank" class="btn btn-outline-info btn-sm" style="color: {{ job.source_color }};">
+<i class="{{ job.source_icon }}"></i> View on {{ job.source }}
+</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search" style="font-size: 4em; color: #ccc;"></i>
+                <h3 class="text-muted mt-3">No job matches found</h3>
+                <p class="text-muted">Try running a job search to find matching opportunities</p>
+                <button id="job-search-btn" onclick="startJobSearch()" class="btn btn-primary btn-lg">
+                    <span id="search-icon" class="search-content">
+                        <i class="bi bi-search"></i> Start Job Search
+                    </span>
+                    <span id="loading-content" class="loading-content" style="display: none;">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Searching for jobs...
+                    </span>
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function startJobSearch() {
+    const button = document.getElementById('job-search-btn');
+    const searchIcon = document.getElementById('search-icon');
+    const loadingContent = document.getElementById('loading-content');
+    
+    // Disable button and show loading
+    button.disabled = true;
+    searchIcon.style.display = 'none';
+    loadingContent.style.display = 'inline-block';
+    
+    // Add some visual feedback
+    button.style.transform = 'scale(0.98)';
+    
+    // Redirect to job search after a brief delay for user feedback
+    setTimeout(() => {
+        window.location.href = '{{ url_for("run_job_search") }}';
+    }, 500);
+}
+
+// Add hover effects and loading animation styles
+const style = document.createElement('style');
+style.textContent = `
+    #job-search-btn {
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+    
+    #job-search-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+    
+    #job-search-btn:disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+    
+    .loading-content {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .spinner-border-sm {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Pulse effect for loading text */
+    .loading-content {
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

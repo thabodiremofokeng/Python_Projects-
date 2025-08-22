@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Job Search Settings</h3>
+                    <p class="mb-0 text-muted">Configure your job search criteria and preferences</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_settings') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.keywords.label(class="form-label") }}
+                                    {{ form.keywords(class="form-control", placeholder="e.g., Python, Data Analysis, Machine Learning") }}
+                                    <div class="form-text">Enter keywords separated by commas</div>
+                                    {% if form.keywords.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.keywords.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.locations.label(class="form-label") }}
+                                    {{ form.locations(class="form-control", placeholder="e.g., New York, Remote, San Francisco") }}
+                                    <div class="form-text">Enter locations separated by commas</div>
+                                    {% if form.locations.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.locations.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.experience_level.label(class="form-label") }}
+                                    {{ form.experience_level(class="form-select") }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.job_types.label(class="form-label") }}
+                                    {{ form.job_types(class="form-select") }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.max_jobs_per_day.label(class="form-label") }}
+                                    {{ form.max_jobs_per_day(class="form-select") }}
+                                    <div class="form-text">Limit to avoid overwhelming results</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                            <div>
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- API Configuration Status -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>API Configuration Status</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong>Google Gemini API</strong>
+                            </div>
+                            <p class="text-muted small">Used for job compatibility analysis and cover letter generation</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                <strong>LinkedIn API</strong>
+                            </div>
+                            <p class="text-muted small">Currently using sample data. LinkedIn API integration coming soon.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy & Security -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>Privacy & Security</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6>🔒 Your Data is Secure</h6>
+                                <ul class="mb-0">
+                                    <li>All data is stored locally on your machine</li>
+                                    <li>API keys are encrypted and never shared</li>
+                                    <li>Resume data remains private and secure</li>
+                                    <li>Application runs on localhost only</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ url_for('run_job_search') }}" class="btn btn-success">
+                                    <i class="bi bi-search me-2"></i>Run Job Search
+                                </a>
+                            </div>
+                            <small class="text-muted">Search for new job matches</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ url_for('resume_management') }}" class="btn btn-info">
+                                    <i class="bi bi-file-text me-2"></i>Manage Resume
+                                </a>
+                            </div>
+                            <small class="text-muted">Upload or view your resume</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ url_for('jobs') }}" class="btn btn-primary">
+                                    <i class="bi bi-briefcase me-2"></i>View Jobs
+                                </a>
+                            </div>
+                            <small class="text-muted">Browse matched positions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

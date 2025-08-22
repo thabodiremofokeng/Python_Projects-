@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Management - Auto Job Application{% endblock %}
+{% block header %}Resume Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Current Resume -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-person"></i> Current Resume
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if active_resume %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 2em;"></i>
+                        <div class="ms-3">
+                            <h6 class="mb-1">{{ active_resume.filename }}</h6>
+                            <small class="text-muted">
+                                Uploaded: {% if active_resume.uploaded_at and active_resume.uploaded_at != 'Unknown' %}{{ active_resume.uploaded_at.strftime('%Y-%m-%d %H:%M') if active_resume.uploaded_at.strftime else active_resume.uploaded_at }}{% else %}Unknown{% endif %}
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                Size: {{ "%.1f KB"|format(active_resume.file_size / 1024) if active_resume.file_size else 'Unknown' }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    {% if active_resume.parsed_data %}
+                    <div class="mt-3">
+                        <h6>Parsed Information:</h6>
+                        <div class="small">
+                            {% if active_resume.parsed_data.personal_info %}
+                            <p><strong>Name:</strong> {{ active_resume.parsed_data.personal_info.get('name', 'Not found') }}</p>
+                            <p><strong>Email:</strong> {{ active_resume.parsed_data.personal_info.get('email', 'Not found') }}</p>
+                            {% endif %}
+                            
+                            {% if active_resume.parsed_data.skills %}
+                            <p><strong>Skills ({{ active_resume.parsed_data.skills|length }}):</strong></p>
+                            <div class="mb-2">
+                                {% for skill in active_resume.parsed_data.skills[:10] %}
+                                <span class="badge bg-secondary me-1">{{ skill }}</span>
+                                {% endfor %}
+                                {% if active_resume.parsed_data.skills|length > 10 %}
+                                <span class="text-muted">...and {{ active_resume.parsed_data.skills|length - 10 }} more</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if active_resume.parsed_data.experience %}
+                            <p><strong>Experience ({{ active_resume.parsed_data.experience|length }} positions):</strong></p>
+                            <ul class="small">
+                                {% for exp in active_resume.parsed_data.experience[:3] %}
+                                <li>{{ exp.title }}</li>
+                                {% endfor %}
+                                {% if active_resume.parsed_data.experience|length > 3 %}
+                                <li class="text-muted">...and {{ active_resume.parsed_data.experience|length - 3 }} more</li>
+                                {% endif %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x text-muted" style="font-size: 3em;"></i>
+                        <h6 class="text-muted mt-3">No resume uploaded</h6>
+                        <p class="text-muted">Upload your resume to start matching jobs</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upload New Resume -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-cloud-upload"></i> Upload New Resume
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('upload_resume') }}" method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.resume_file.label(class="form-label") }}
+                        {{ form.resume_file(class="form-control") }}
+                        {% if form.resume_file.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.resume_file.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Supported formats: PDF, DOCX. Max size: 16MB
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle"></i> Tips for better results:</h6>
+                    <ul class="mb-0 small">
+                        <li>Use a well-formatted resume with clear sections</li>
+                        <li>Include skills, experience, and education sections</li>
+                        <li>Keep the format simple (avoid complex layouts)</li>
+                        <li>Ensure text is selectable (not just images)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if active_resume and active_resume.parsed_data %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-text"></i> Detailed Resume Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Skills & Technologies</h6>
+                        {% if active_resume.parsed_data.skills %}
+                        <div class="mb-3">
+                            {% for skill in active_resume.parsed_data.skills %}
+                            <span class="badge bg-primary me-1 mb-1">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No skills detected</p>
+                        {% endif %}
+                        
+                        <h6>Education</h6>
+                        {% if active_resume.parsed_data.education %}
+                        <ul>
+                            {% for edu in active_resume.parsed_data.education %}
+                            <li>{{ edu.degree }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No education information detected</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Work Experience</h6>
+                        {% if active_resume.parsed_data.experience %}
+                        {% for exp in active_resume.parsed_data.experience %}
+                        <div class="mb-3">
+                            <strong>{{ exp.title }}</strong>
+                            {% if exp.get('dates') %}
+                            <small class="text-muted d-block">{{ exp.dates }}</small>
+                            {% endif %}
+                            {% if exp.description %}
+                            <p class="small mb-0">{{ exp.description[:200] }}{% if exp.description|length > 200 %}...{% endif %}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted">No work experience detected</p>
+                        {% endif %}
+                        
+                        <h6>Projects</h6>
+                        {% if active_resume.parsed_data.projects %}
+                        {% for project in active_resume.parsed_data.projects %}
+                        <div class="mb-2">
+                            <strong>{{ project.name }}</strong>
+                            {% if project.description %}
+                            <p class="small mb-0">{{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted">No projects detected</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

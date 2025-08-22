@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Review Scraped Jobs{% endblock %}
+
+{% block header %}Review Jobs{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Job Review Center</h5>
+                    <p class="card-text">Review and categorize your scraped jobs. Total jobs: <strong>{{ total_jobs }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <form method="GET" action="{{ url_for('review_jobs') }}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="status">Filter by Status</label>
+                    <select class="form-control" name="status" onchange="this.form.submit()">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All ({{ total_jobs }})</option>
+                        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>🆕 New</option>
+                        <option value="reviewed" {% if status_filter == 'reviewed' %}selected{% endif %}>👁️ Reviewed</option>
+                        <option value="interested" {% if status_filter == 'interested' %}selected{% endif %}>✅ Interested</option>
+                        <option value="not_interested" {% if status_filter == 'not_interested' %}selected{% endif %}>❌ Not Interested</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="source">Filter by Source</label>
+                    <select class="form-control" name="source" onchange="this.form.submit()">
+                        <option value="all" {% if source_filter == 'all' %}selected{% endif %}>All Sources</option>
+                        {% for source in sources %}
+                        <option value="{{ source }}" {% if source_filter == source %}selected{% endif %}>{{ source }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div>
+                        <span class="text-muted">Showing {{ jobs|length }} of {{ total_jobs }} jobs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form method="POST" action="{{ url_for('bulk_job_action') }}">
+        {{ csrf_token() }}
+        <input type="hidden" name="bulk_action" id="bulk-action">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">
+                            <input type="checkbox" id="check-all">
+                        </th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Company</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Source</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if jobs %}
+                        {% for job in jobs %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="job_ids" value="{{ job.id }}">
+                            </td>
+                            <td><strong>{{ job.title }}</strong></td>
+                            <td>{{ job.company }}</td>
+                            <td>{{ job.location or 'Remote' }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ job.source or 'Unknown' }}</span>
+                            </td>
+                            <td>
+                                {% if job.status == 'new' %}
+                                    <span class="badge bg-primary">🆕 New</span>
+                                {% elif job.status == 'interested' %}
+                                    <span class="badge bg-success">✅ Interested</span>
+                                {% elif job.status == 'not_interested' %}
+                                    <span class="badge bg-danger">❌ Not Interested</span>
+                                {% elif job.status == 'reviewed' %}
+                                    <span class="badge bg-info">👁️ Reviewed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ job.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('job_detail', job_id=job.id) }}" class="btn btn-info btn-sm">Details</a>
+                                    <button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus('{{ job.id }}', 'interested')">👍</button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="updateJobStatus('{{ job.id }}', 'not_interested')">👎</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                    <h5 class="mt-3">No jobs found</h5>
+                                    <p>No jobs match your current filters. Try adjusting the filters above or run a new job search.</p>
+                                    <a href="{{ url_for('run_job_search') }}" class="btn btn-primary">Run Job Search</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <button type="button" class="btn btn-info" onclick="setBulkAction('mark_reviewed')">Mark All as Reviewed</button>
+                <button type="button" class="btn btn-success" onclick="setBulkAction('mark_interested')">Mark All as Interested</button>
+                <button type="button" class="btn btn-danger" onclick="setBulkAction('mark_not_interested')">Mark All as Not Interested</button>
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('review_jobs', page=current_page-1, status=status_filter, source=source_filter) }}">Previous</a>
+                    </li>
+                    {% for page in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page == current_page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('review_jobs', page=page, status=status_filter, source=source_filter) }}">{{ page }}</a>
+                    </li>
+                    {% endfor %}
+                    <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('review_jobs', page=current_page+1, status=status_filter, source=source_filter) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('check-all').addEventListener('click', function(event) {
+    const checkboxes = document.querySelectorAll('input[name="job_ids"]');
+    checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
+});
+
+function setBulkAction(action) {
+    document.getElementById('bulk-action').value = action;
+    document.forms[1].submit();
+}
+
+function updateJobStatus(jobId, status) {
+    fetch(`/job/${jobId}/update_review`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: status })
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to update job status.');
+        }
+    }).catch(err => {
+        console.error('Error updating job status:', err);
+    });
+}
+</script>
+{% endblock %}

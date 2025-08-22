@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>My Job Applications</h2>
+                <div>
+                    <a href="{{ url_for('jobs') }}" class="btn btn-primary">Browse Jobs</a>
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="statusFilter" class="form-label">Filter by Status:</label>
+                            <select class="form-select" id="statusFilter" onchange="filterApplications()">
+                                <option value="">All Applications</option>
+                                <option value="pending">Pending</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="interview">Interview</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="accepted">Accepted</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applications List -->
+            {% if applications %}
+            <div class="row">
+                {% for app in applications %}
+                <div class="col-md-6 col-lg-4 mb-4" data-status="{{ app.status or 'pending' }}">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">{{ app.job_title or 'Unknown Position' }}</h6>
+                            <span class="badge 
+                                {% if app.status == 'submitted' %}bg-info
+                                {% elif app.status == 'interview' %}bg-warning
+                                {% elif app.status == 'accepted' %}bg-success
+                                {% elif app.status == 'rejected' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ app.status.title() if app.status else 'Pending' }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ app.company or 'Unknown Company' }}</h6>
+                            
+                            <div class="small text-muted mb-2">
+                                <strong>Applied:</strong> {{ app.applied_date.strftime('%Y-%m-%d') if app.applied_date else 'N/A' }}
+                            </div>
+
+                            {% if app.compatibility_score %}
+                            <div class="mb-2">
+                                <small class="text-muted">Compatibility: </small>
+                                <span class="badge {% if app.compatibility_score >= 70 %}bg-success{% elif app.compatibility_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ app.compatibility_score }}%
+                                </span>
+                            </div>
+                            {% endif %}
+
+                            {% if app.notes %}
+                            <div class="mb-3">
+                                <small class="text-muted">Notes:</small>
+                                <p class="small">{{ app.notes[:100] }}{% if app.notes|length > 100 %}...{% endif %}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if app.cover_letter %}
+                            <div class="mb-3">
+                                <button class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#coverLetter{{ app.id }}" aria-expanded="false">
+                                    View Cover Letter
+                                </button>
+                                <div class="collapse mt-2" id="coverLetter{{ app.id }}">
+                                    <div class="card card-body small">
+                                        {{ app.cover_letter[:200] }}{% if app.cover_letter|length > 200 %}...{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-8">
+                                    <form method="POST" action="{{ url_for('update_application', app_id=app.id) }}" class="d-inline">
+                                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            <option value="pending" {% if app.status == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="submitted" {% if app.status == 'submitted' %}selected{% endif %}>Submitted</option>
+                                            <option value="interview" {% if app.status == 'interview' %}selected{% endif %}>Interview</option>
+                                            <option value="rejected" {% if app.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                            <option value="accepted" {% if app.status == 'accepted' %}selected{% endif %}>Accepted</option>
+                                        </select>
+                                    </form>
+                                </div>
+                                <div class="col-4">
+                                    {% if app.job_id %}
+                                    <a href="{{ url_for('job_detail', job_id=app.job_id) }}" class="btn btn-outline-primary btn-sm">View Job</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <h5>No Applications Yet</h5>
+                    <p class="text-muted">You haven't applied to any jobs yet. Start by browsing available positions.</p>
+                    <a href="{{ url_for('jobs') }}" class="btn btn-primary">Browse Jobs</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function filterApplications() {
+    const filter = document.getElementById('statusFilter').value.toLowerCase();
+    const applications = document.querySelectorAll('[data-status]');
+    
+    applications.forEach(app => {
+        const status = app.getAttribute('data-status').toLowerCase();
+        if (filter === '' || status === filter) {
+            app.style.display = 'block';
+        } else {
+            app.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

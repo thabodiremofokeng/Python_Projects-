@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Auto Job Application{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('run_job_search') }}" class="btn btn-primary">
+    <i class="bi bi-search"></i> Run Job Search
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Total Matches</h6>
+                        <h3 class="mb-0">{{ stats.total_matched_jobs }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-briefcase" style="font-size: 2em;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">High Scores (80+)</h6>
+                        <h3 class="mb-0">{{ stats.high_score_matches }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-star" style="font-size: 2em;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Applications</h6>
+                        <h3 class="mb-0">{{ stats.total_applications }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-file-earmark-text" style="font-size: 2em;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Applied</h6>
+                        <h3 class="mb-0">{{ stats.applied_count }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle" style="font-size: 2em;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Job Matches -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-briefcase"></i> Recent Job Matches
+                </h5>
+                <a href="{{ url_for('jobs') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_matches %}
+                    {% for job in recent_matches %}
+                    <div class="job-card card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="card-title mb-1">{{ job.title }}</h6>
+                                    <p class="text-muted mb-1">
+                                        <i class="bi bi-building"></i> {{ job.company }}
+                                        {% if job.location %}
+                                        <span class="ms-2">
+                                            <i class="bi bi-geo-alt"></i> {{ job.location }}
+                                        </span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="card-text small">{{ job.overall_assessment[:100] }}...</p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="compatibility-score {{ 'score-excellent' if job.compatibility_score >= 90 else 'score-good' if job.compatibility_score >= 70 else 'score-moderate' if job.compatibility_score >= 50 else 'score-weak' }}">
+                                        {{ job.compatibility_score }}/100
+                                    </div>
+                                    <div class="mt-2">
+                                        {% if job.recommended_application %}
+                                            <span class="badge bg-success">Recommended</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Recommended</span>
+                                        {% endif %}
+                                        {% if job.application_status %}
+                                            <span class="badge bg-info">{{ job.application_status.title() }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('job_detail', job_id=job.id) }}" class="btn btn-sm btn-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-search" style="font-size: 3em; color: #ccc;"></i>
+                        <h5 class="text-muted mt-3">No job matches yet</h5>
+                        <p class="text-muted">Run a job search to find matching opportunities</p>
+                        <a href="{{ url_for('run_job_search') }}" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Start Job Search
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity Panel -->
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('run_job_search') }}" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Run Job Search
+                    </a>
+                    <a href="{{ url_for('resume_management') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-person"></i> Upload Resume
+                    </a>
+                    <a href="{{ url_for('applications') }}" class="btn btn-outline-info">
+                        <i class="bi bi-file-earmark-text"></i> View Applications
+                    </a>
+                    <a href="{{ url_for('settings') }}" class="btn btn-outline-dark">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Applications -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Activity
+                </h5>
+                <a href="{{ url_for('applications') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_applications %}
+                    {% for app in recent_applications %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-1">{{ app.title }}</h6>
+                            <small class="text-muted">{{ app.company }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ 'success' if app.status == 'applied' else 'warning' if app.status == 'approved' else 'secondary' }}">
+                                {{ app.status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-file-earmark-text" style="font-size: 2em; color: #ccc;"></i>
+                        <p class="text-muted mt-2 mb-0">No applications yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh stats every 30 seconds
+    setInterval(function() {
+        fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update stats cards with new data
+                console.log('Stats updated:', data);
+            })
+            .catch(error => console.error('Error fetching stats:', error));
+    }, 30000);
+</script>
+{% endblock %}

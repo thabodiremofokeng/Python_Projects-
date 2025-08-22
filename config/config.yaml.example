@@ -50,5 +50,5 @@ logging:
   level: INFO
   max_file_size: 10MB
 resume:
-  file_path: data/resume/Thabo mofokeng 2024 resume.pdf
+  file_path: data/resume/your_resume.pdf
   format: pdf

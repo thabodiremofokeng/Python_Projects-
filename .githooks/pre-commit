@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# Abort commit if forbidden files are staged
+set -eu
+
+# list of blocked files (exact paths relative to repo root)
+BLOCKED="
+create_desktop_shortcut.ps1
+create_shortcut.ps1
+fix_database.py
+linkedin_refresh.py
+migrate_review_columns.py
+refresh_jobs.py
+test_linkedin_public.py
+test_review.py
+update_database_schema.py
+"
+
+# get staged files (added/modified/copied/renamed)
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+# check for any blocked file among staged
+for f in $staged; do
+  for b in $BLOCKED; do
+    if [ "$f" = "$b" ]; then
+      echo "pre-commit: committing '$f' is blocked by repository policy." >&2
+      echo "If this is intentional, rename or update policy in .githooks/pre-commit." >&2
+      exit 1
+    fi
+  done
+done
+
+exit 0

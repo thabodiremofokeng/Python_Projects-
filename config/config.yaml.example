@@ -1,0 +1,54 @@
+application:
+  auto_apply: false
+  cover_letter_template: data/cover_letter_template.txt
+  delay_between_applications: 60
+browser:
+  headless: false
+  implicit_wait: 10
+  timeout: 30
+google_gemini:
+  api_key: YOUR_GOOGLE_GEMINI_API_KEY_HERE
+  model: gemini-1.5-flash
+job_search:
+  experience_level:
+  - senior
+  job_types:
+  - full-time
+  keywords:
+  - data
+  - data scientist
+  - data engineer
+  - data manager
+  - data architect
+  - head of data
+  - analytics manager
+  - data analyst
+  - python
+  - principal data
+  - data consultant
+  - machine learning
+  - business intelligence
+  - analytics
+  - insight
+  - reporting
+  - tableau
+  - power bi
+  - sql
+  - statistician
+  - research
+  locations:
+  - Remote
+  - South Africa
+  - Cape Town
+  - Johannesburg
+  max_jobs_per_day: 5
+linkedin:
+  email: YOUR_EMAIL_HERE
+  password: YOUR_PASSWORD_HERE
+logging:
+  file: logs/app.log
+  level: INFO
+  max_file_size: 10MB
+resume:
+  file_path: data/resume/your_resume.pdf
+  format: pdf

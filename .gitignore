@@ -91,3 +91,6 @@ refresh_jobs.py
 test_linkedin_public.py
 update_database_schema.py
 fix_database.py
+
+# Config files with secrets (use .example files for templates)
+config/config.yaml

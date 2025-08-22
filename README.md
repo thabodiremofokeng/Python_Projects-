@@ -1,15 +1,15 @@
-# Auto Job Application System 🚀
+# Auto Job Application System 
 
 An intelligent job search and application management system that combines web scraping, AI-powered job matching, and automated application tracking. The system parses your resume, finds relevant jobs, uses Google Gemini AI to analyze job compatibility, and provides a web interface to manage your job search process.
 
 ## ✨ Features
-- **🔍 Intelligent Job Discovery**: Scrapes jobs from multiple sources with fallback to sample data
-- **🤖 AI-Powered Job Matching**: Uses Google Gemini AI to analyze job-resume compatibility (0-100 score)
-- **📄 Resume Intelligence**: Extracts skills, experience, and education from PDF/DOCX files
-- **🌐 Web Dashboard**: Modern Flask web interface for job browsing and application management
-- **📊 Application Tracking**: SQLite database tracks jobs, analyses, and applications
-- **🔐 Security First**: Local-only operation with secure credential management
-- **⚡ Quick Launch**: One-command setup with background job scraping
+- ** Intelligent Job Discovery**: Scrapes jobs from multiple sources with fallback to sample data
+- ** AI-Powered Job Matching**: Uses Google Gemini AI to analyze job-resume compatibility (0-100 score)
+- ** Resume Intelligence**: Extracts skills, experience, and education from PDF/DOCX files
+- ** Web Dashboard**: Modern Flask web interface for job browsing and application management
+- ** Application Tracking**: SQLite database tracks jobs, analyses, and applications
+- ** Security First**: Local-only operation with secure credential management
+- ** Quick Launch**: One-command setup with background job scraping
 
 ## 🏗️ Architecture
 

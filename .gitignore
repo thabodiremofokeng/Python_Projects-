@@ -80,3 +80,14 @@ Thumbs.db
 # CSV files
 *.CSV
 *.xls
+
+# Project-specific ignores: prevent removed scripts/tests from being re-added
+test_review.py
+migrate_review_columns.py
+linkedin_refresh.py
+create_shortcut.ps1
+create_desktop_shortcut.ps1
+refresh_jobs.py
+test_linkedin_public.py
+update_database_schema.py
+fix_database.py

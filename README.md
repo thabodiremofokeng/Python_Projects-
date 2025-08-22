@@ -126,7 +126,7 @@ python src/main.py
 - **Google Gemini Analysis**: Sends job description + resume to Gemini AI
 - **Compatibility Scoring**: 0-100 score based on skills, experience match
 - **Detailed Analysis**: Match reasons, skill gaps, cover letter suggestions
-- **Application Recommendations**: AI decides if job is worth applying to
+- **Application Recommendations**: AI decides if the job is worth applying to
 
 ### 4. Application Management
 - **Web Dashboard**: Browse jobs by compatibility score
@@ -137,7 +137,7 @@ python src/main.py
 ## 🔒 Security & Privacy
 
 ### Data Security
-- **Local-only operation**: All data stored on your machine
+- **Local-only operation**: All data is stored on your machine
 - **No cloud dependencies**: Resume and job data never leaves your computer
 - **Secure credential management**: API keys stored in `.env` (gitignored)
 - **Config templates**: Real config files excluded from version control
@@ -255,7 +255,7 @@ python -c "from src.database_manager import DatabaseManager; DatabaseManager().i
 # Check if port 5000 is in use
 netstat -an | grep :5000
 
-# Start with different port
+# Start with a different port
 FLASK_PORT=5001 python start_app.py
 ```
 
@@ -267,7 +267,7 @@ FLASK_PORT=5001 python start_app.py
 
 ## 💡 Tips for Best Results
 
-### Resume Optimization
+### Resume Optimisation
 - **Use clear formatting**: Simple layouts parse better than complex designs
 - **Include relevant keywords**: Match job posting terminology
 - **List specific technologies**: "Python, pandas, scikit-learn" vs. "programming"
@@ -301,11 +301,11 @@ def _scrape_custom_source(self):
     return jobs_list
 ```
 
-### AI Prompt Customization
-Modify `gemini_matcher.py` to customize analysis:
+### AI Prompt Customisation
+Modify `gemini_matcher.py` to customise analysis:
 ```python
 def _create_analysis_prompt(self, resume_data, job):
-    # Customize the AI analysis prompt
+    # Customise the AI analysis prompt
     return custom_prompt
 ```
 

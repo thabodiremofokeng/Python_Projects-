@@ -1,11 +1,11 @@
 # Auto Job Application System 🚀
 
-An intelligent automated system that scrapes real LinkedIn jobs, uses Google Gemini AI to analyze compatibility with your resume, and can automatically apply to suitable positions.
+An intelligent automated system that discovers job postings, uses Google Gemini AI to analyze compatibility with your resume, and can optionally automate applications where supported.
 
 ## ✨ Features
-- **Real LinkedIn Job Scraping**: Scrapes actual job postings from LinkedIn
+- **Job Scraping**: Scrapes job postings from supported sources
 - **AI-Powered Matching**: Uses Google Gemini to analyze job compatibility
-- **Automated Applications**: Can automatically apply to jobs via LinkedIn Easy Apply
+- **Automated Applications**: Can automatically apply to jobs where supported
 - **Web Dashboard**: Modern web interface to browse jobs and manage applications
 - **Resume Analysis**: Intelligent parsing of PDF/DOCX resumes
 - **Application Tracking**: Database-driven tracking of all applications
@@ -14,7 +14,7 @@ An intelligent automated system that scrapes real LinkedIn jobs, uses Google Gem
 ```
 ├── src/                    # Core application code
 │   ├── main.py            # Main CLI application
-│   ├── job_scraper.py     # LinkedIn job scraping
+│   ├── job_scraper.py     # Job scraping
 │   ├── gemini_matcher.py  # AI job matching
 │   ├── job_applicator.py  # Automated job applications
 │   ├── resume_parser.py   # Resume parsing and analysis
@@ -41,8 +41,6 @@ pip install -r requirements.txt
 Edit `.env` file with your credentials:
 ```env
 GOOGLE_GEMINI_API_KEY=your_gemini_api_key_here
-LINKEDIN_EMAIL=your_linkedin_email
-LINKEDIN_PASSWORD=your_linkedin_password
 ```
 
 ### 3. Configure Job Search
@@ -75,7 +73,7 @@ python test_real_scraping.py
 ```bash
 # Reset database and upload resume with job search
 python reset_database.py
-python upload_resume_and_search.py  # This will scrape real LinkedIn jobs!
+python upload_resume_and_search.py  # This will search for jobs based on your criteria
 ```
 
 ### Option 3: Web Interface
@@ -94,7 +92,7 @@ python src/main.py
 ## 🔧 Usage Modes
 
 ### 1. Job Discovery Mode (Safe)
-- Scrapes real LinkedIn jobs
+- Scrapes jobs
 - Analyzes compatibility with AI
 - Saves matches to database
 - **Does NOT apply automatically**
@@ -103,13 +101,12 @@ python src/main.py
 ### 2. Automatic Application Mode (Use with Caution!)
 - Set `auto_apply: true` in `config/config.yaml`
 - **Will automatically apply to recommended jobs**
-- Uses LinkedIn Easy Apply when available
 - Includes rate limiting and error handling
 
 ## 🛡️ Safety Features
 
 - **Auto-apply disabled by default** - You control when to enable it
-- **Rate limiting** - Respects LinkedIn's usage policies
+- **Rate limiting** - Respects platform usage policies
 - **Manual review** - Web interface to approve applications
 - **Compatibility scoring** - Only applies to high-match jobs
 - **Local data** - All data stored locally and securely
@@ -127,11 +124,6 @@ Access the web interface at `http://127.0.0.1:5000` to:
 
 ## ⚠️ Important Notes
 
-### LinkedIn Usage
-- This tool automates LinkedIn interactions
-- Use responsibly and respect LinkedIn's terms of service
-- Consider using a dedicated LinkedIn account for automation
-- Monitor for any account restrictions
 
 ### Data Privacy
 - All data is stored locally on your machine
@@ -141,12 +133,12 @@ Access the web interface at `http://127.0.0.1:5000` to:
 ### Rate Limiting
 - Built-in delays between requests
 - Configurable application delays (default: 60 seconds)
-- Respects LinkedIn's anti-bot measures
+- Respects platform anti-bot measures
 
 ## 🔄 Workflow
 
 1. **Setup**: Configure credentials and job search criteria
-2. **Scrape**: System logs into LinkedIn and searches for jobs
+2. **Scrape**: System searches configured sources for jobs
 3. **Analyze**: Google Gemini AI analyzes each job against your resume
 4. **Score**: Jobs receive compatibility scores (0-100)
 5. **Filter**: Only high-scoring jobs (50+) are recommended
@@ -156,14 +148,14 @@ Access the web interface at `http://127.0.0.1:5000` to:
 
 ## 🚨 Troubleshooting
 
-### LinkedIn Login Issues
+### Login Issues
 - Verify credentials in `.env` file
 - Handle 2FA manually when prompted
 - Check for account restrictions
 
 ### No Jobs Found
 - Verify job search keywords and locations
-- Check LinkedIn search results manually
+- Check search results manually on your chosen platform(s)
 - Ensure network connectivity
 
 ### Gemini API Issues

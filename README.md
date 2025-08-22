@@ -1,186 +1,336 @@
 # Auto Job Application System 🚀
 
-An intelligent automated system that discovers job postings, uses Google Gemini AI to analyze compatibility with your resume, and can optionally automate applications where supported.
+An intelligent job search and application management system that combines web scraping, AI-powered job matching, and automated application tracking. The system parses your resume, finds relevant jobs, uses Google Gemini AI to analyze job compatibility, and provides a web interface to manage your job search process.
 
 ## ✨ Features
-- **Job Scraping**: Scrapes job postings from supported sources
-- **AI-Powered Matching**: Uses Google Gemini to analyze job compatibility
-- **Automated Applications**: Can automatically apply to jobs where supported
-- **Web Dashboard**: Modern web interface to browse jobs and manage applications
-- **Resume Analysis**: Intelligent parsing of PDF/DOCX resumes
-- **Application Tracking**: Database-driven tracking of all applications
+- **🔍 Intelligent Job Discovery**: Scrapes jobs from multiple sources with fallback to sample data
+- **🤖 AI-Powered Job Matching**: Uses Google Gemini AI to analyze job-resume compatibility (0-100 score)
+- **📄 Resume Intelligence**: Extracts skills, experience, and education from PDF/DOCX files
+- **🌐 Web Dashboard**: Modern Flask web interface for job browsing and application management
+- **📊 Application Tracking**: SQLite database tracks jobs, analyses, and applications
+- **🔐 Security First**: Local-only operation with secure credential management
+- **⚡ Quick Launch**: One-command setup with background job scraping
 
-## 📁 Project Structure
+## 🏗️ Architecture
+
+The system consists of several integrated components:
+
+### Core Components
+- **Resume Parser** (`resume_parser.py`): Extracts structured data from PDF/DOCX resumes using NLTK
+- **Job Scraper** (`job_scraper.py`): Multi-source job scraping with fallback mechanisms  
+- **Gemini Matcher** (`gemini_matcher.py`): AI-powered job compatibility analysis
+- **Database Manager** (`database_manager.py`): SQLite operations for jobs, analyses, and applications
+- **Job Applicator** (`job_applicator.py`): Handles application workflow (disabled by default)
+
+### Interfaces
+- **Web Interface** (`web/app.py`): Flask dashboard with job browsing and management
+- **CLI Interface** (`src/main.py`): Command-line job processing
+- **Quick Launcher** (`quick_launch.py`): One-command setup and execution
+
+### Data Flow
 ```
-├── src/                    # Core application code
-│   ├── main.py            # Main CLI application
-│   ├── job_scraper.py     # Job scraping
-│   ├── gemini_matcher.py  # AI job matching
-│   ├── job_applicator.py  # Automated job applications
-│   ├── resume_parser.py   # Resume parsing and analysis
-│   └── database_manager.py # SQLite database operations
-├── web/                   # Web interface
-│   ├── app.py            # Flask web application
-│   └── templates/        # HTML templates
-├── config/               # Configuration files
-├── data/                # Data storage
-│   ├── resume/          # Your resume files
-│   ├── jobs/            # Scraped job data
-│   └── *.db            # SQLite database
-└── logs/               # Application logs
+Resume (PDF/DOCX) → Parser → Structured Data
+                                    ↓
+Job Sources → Scraper → Raw Jobs → Gemini AI → Compatibility Analysis → Database
+                                                        ↓
+Web Dashboard ← Database ← Job Applications ← Manual Review
 ```
 
-## 🛠️ Setup
+## ⚡ Quick Start
 
 ### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Keys
-Edit `.env` file with your credentials:
-```env
-GOOGLE_GEMINI_API_KEY=your_gemini_api_key_here
+### 2. Create Configuration
+```bash
+# Copy configuration template
+cp config/config.yaml.example config/config.yaml
+
+# Create environment file
+echo "GOOGLE_GEMINI_API_KEY=your_api_key_here" > .env
 ```
 
-### 3. Configure Job Search
-Edit `config/config.yaml` to customize your job search:
+### 3. Add Your Resume
+```bash
+# Create resume directory and add your file
+mkdir -p data/resume
+# Copy your resume.pdf or resume.docx to data/resume/
+```
+
+### 4. Configure Job Search
+Edit `config/config.yaml`:
 ```yaml
 job_search:
-  keywords:
-    - data analyst
-    - business analyst
-    - python developer
-  locations:
-    - Remote
-    - South Africa
-    - Cape Town
-  max_jobs_per_day: 10
+  keywords: ["data scientist", "python developer", "analyst"]
+  locations: ["Remote", "Your City"]
+  max_jobs_per_day: 5
+google_gemini:
+  api_key: YOUR_GOOGLE_GEMINI_API_KEY_HERE  # Will use .env if available
+resume:
+  file_path: data/resume/your_resume.pdf
 ```
 
-### 4. Add Your Resume
-Place your resume (PDF or DOCX) in `data/resume/` directory.
+## 🚀 Running the Application
 
-## 🚀 Quick Start
-
-### Option 1: Test the System
+### Option 1: Quick Launch (Recommended)
 ```bash
-# Test that everything works
-python test_real_scraping.py
+python quick_launch.py
 ```
+This will:
+- Parse your resume
+- Scrape and analyze jobs
+- Start the web interface
+- Open your browser automatically
 
-### Option 2: Full Setup and Search
+### Option 2: Secure Web Interface
 ```bash
-# Reset database and upload resume with job search
-python reset_database.py
-python upload_resume_and_search.py  # This will search for jobs based on your criteria
-```
-
-### Option 3: Web Interface
-```bash
-# Start the web application
 python start_app.py
-# Open http://127.0.0.1:5000 in your browser
 ```
+- Includes security checks
+- Local-only operation (127.0.0.1)
+- CSRF protection and secure headers
 
-### Option 4: Command Line
+### Option 3: Background Processing
 ```bash
-# Run the main application
+python launch_app.py
+```
+- Continuous background job scraping
+- Web interface + automated updates
+- Best for ongoing job search
+
+### Option 4: CLI Only
+```bash
 python src/main.py
 ```
+- Command-line interface only
+- One-time job processing
+- Saves results to JSON files
 
-## 🔧 Usage Modes
+## 🎯 How It Works
 
-### 1. Job Discovery Mode (Safe)
-- Scrapes jobs
-- Analyzes compatibility with AI
-- Saves matches to database
-- **Does NOT apply automatically**
-- Review matches in web interface
+### 1. Resume Analysis
+- Parses PDF/DOCX resumes using PyPDF2, pdfplumber, and python-docx
+- Extracts: personal info, skills, experience, education, certifications
+- Uses NLTK for natural language processing
+- Stores structured data in SQLite database
 
-### 2. Automatic Application Mode (Use with Caution!)
-- Set `auto_apply: true` in `config/config.yaml`
-- **Will automatically apply to recommended jobs**
-- Includes rate limiting and error handling
+### 2. Job Discovery
+- **Multi-source scraping**: Attempts various job sources
+- **Fallback system**: Uses sample jobs if scraping fails
+- **Deduplication**: Prevents duplicate job entries
+- **Filtering**: Focuses on senior data roles based on keywords
 
-## 🛡️ Safety Features
+### 3. AI-Powered Matching
+- **Google Gemini Analysis**: Sends job description + resume to Gemini AI
+- **Compatibility Scoring**: 0-100 score based on skills, experience match
+- **Detailed Analysis**: Match reasons, skill gaps, cover letter suggestions
+- **Application Recommendations**: AI decides if job is worth applying to
 
-- **Auto-apply disabled by default** - You control when to enable it
-- **Rate limiting** - Respects platform usage policies
-- **Manual review** - Web interface to approve applications
-- **Compatibility scoring** - Only applies to high-match jobs
-- **Local data** - All data stored locally and securely
-- **Detailed logging** - Track all activities
+### 4. Application Management
+- **Web Dashboard**: Browse jobs by compatibility score
+- **Manual Review**: Approve applications before sending
+- **Cover Letter Generation**: AI-generated personalized cover letters
+- **Status Tracking**: Track application progress and responses
 
-## 📊 Web Dashboard
+## 🔒 Security & Privacy
 
-Access the web interface at `http://127.0.0.1:5000` to:
-- View all scraped jobs with compatibility scores
-- Read detailed AI analysis for each job
-- Manually approve applications
-- Generate custom cover letters
-- Track application status
-- Manage your resume
+### Data Security
+- **Local-only operation**: All data stored on your machine
+- **No cloud dependencies**: Resume and job data never leaves your computer
+- **Secure credential management**: API keys stored in `.env` (gitignored)
+- **Config templates**: Real config files excluded from version control
 
-## ⚠️ Important Notes
+### Web Interface Security
+- **Localhost binding**: Only accessible from 127.0.0.1
+- **CSRF protection**: Prevents cross-site request forgery
+- **Security headers**: XSS protection, content security policy
+- **File upload validation**: Only allows PDF/DOCX resume files
 
+### Application Safety
+- **Manual approval required**: Auto-apply disabled by default
+- **Review before applying**: Web interface for application approval
+- **Rate limiting**: Respects platform usage policies
+- **Detailed logging**: Full audit trail of all activities
 
-### Data Privacy
-- All data is stored locally on your machine
-- Never share your `.env` file or API keys
-- Resume and job data remain private
+## 📊 Web Dashboard Features
 
-### Rate Limiting
-- Built-in delays between requests
-- Configurable application delays (default: 60 seconds)
-- Respects platform anti-bot measures
+### Dashboard Overview (`/`)
+- **Statistics**: Total jobs, matches, applications
+- **Recent Activity**: Latest matched jobs and applications
+- **Quick Actions**: Run job search, upload resume
 
-## 🔄 Workflow
+### Job Browser (`/jobs`)
+- **Compatibility scores**: AI-generated 0-100 ratings
+- **Detailed analysis**: Match reasons, skill gaps, recommendations
+- **Company information**: Job title, company, location, salary
+- **Filtering**: Sort by score, company, date
 
-1. **Setup**: Configure credentials and job search criteria
-2. **Scrape**: System searches configured sources for jobs
-3. **Analyze**: Google Gemini AI analyzes each job against your resume
-4. **Score**: Jobs receive compatibility scores (0-100)
-5. **Filter**: Only high-scoring jobs (50+) are recommended
-6. **Review**: Use web interface to review matches
-7. **Apply**: Manually approve or enable auto-apply for suitable jobs
-8. **Track**: Monitor application status and responses
+### Job Details (`/job/<id>`)
+- **Full job description**: Complete posting content
+- **AI analysis breakdown**: Detailed compatibility report
+- **Application approval**: Review and approve applications
+- **Cover letter generation**: AI-generated personalized letters
+
+### Settings & Management
+- **Resume upload**: Replace resume and reprocess matches
+- **Search configuration**: Update keywords, locations, limits
+- **Application history**: Track sent applications and responses
+
+## 🛠️ Technical Details
+
+### Database Schema
+- **job_postings**: Scraped job information
+- **job_analysis**: Gemini AI analysis results
+- **applications**: Application tracking and status
+- **resumes**: Uploaded resume files and parsed data
+- **search_sessions**: Job search session tracking
+
+### AI Analysis Process
+1. **Prompt Engineering**: Creates detailed prompts combining resume + job description
+2. **Gemini API Call**: Sends structured request to Google Gemini
+3. **Response Parsing**: Extracts JSON analysis or creates fallback analysis
+4. **Score Calculation**: 0-100 compatibility score with detailed reasoning
+5. **Database Storage**: Saves analysis for web interface display
+
+### Job Sources & Fallbacks
+- **Primary**: Web scraping from job boards
+- **Fallback**: Sample job generation for demo/testing
+- **Filtering**: Senior data role focus based on keywords
+- **Deduplication**: Hash-based duplicate prevention
+
+## 🔄 Complete Workflow
+
+### Initial Setup
+1. **Configuration**: API keys, job search criteria, resume path
+2. **Resume Upload**: Parse and extract structured data
+3. **Database Initialization**: Create tables and schemas
+
+### Job Processing Cycle
+1. **Job Discovery**: Multi-source scraping with fallbacks
+2. **Deduplication**: Remove duplicate postings
+3. **AI Analysis**: Gemini analyzes each job vs. resume
+4. **Database Storage**: Save jobs and analysis results
+5. **Web Interface Update**: Real-time dashboard updates
+
+### Application Management
+1. **Job Review**: Browse compatible jobs in web interface
+2. **Detailed Analysis**: Read AI compatibility reports
+3. **Application Approval**: Manually review and approve
+4. **Cover Letter**: Generate personalized cover letters
+5. **Status Tracking**: Monitor application progress
+
+### Continuous Operation
+- **Background Scraping**: Automatic job discovery (launch_app.py)
+- **Real-time Updates**: New jobs appear in dashboard
+- **Progressive Analysis**: AI processes new jobs automatically
 
 ## 🚨 Troubleshooting
 
-### Login Issues
-- Verify credentials in `.env` file
-- Handle 2FA manually when prompted
-- Check for account restrictions
+### Configuration Issues
+```bash
+# Check if config files exist
+ls config/config.yaml .env
 
-### No Jobs Found
-- Verify job search keywords and locations
-- Check search results manually on your chosen platform(s)
-- Ensure network connectivity
+# Validate Gemini API key
+python -c "import google.generativeai as genai; genai.configure(api_key='your_key'); print('✅ API key valid')"
+```
 
-### Gemini API Issues
-- Verify API key in `.env` file
-- Check API quotas and billing
-- Review error logs in `logs/app.log`
+### Resume Parsing Problems
+```bash
+# Test resume parsing directly
+python -c "from src.resume_parser import ResumeParser; from src.config_manager import ConfigManager; rp = ResumeParser(ConfigManager()); print(rp.parse_resume())"
+```
 
-## 🎯 Tips for Best Results
+### Database Issues
+```bash
+# Reset database
+rm -f data/job_applications.db
+python -c "from src.database_manager import DatabaseManager; DatabaseManager().init_database()"
+```
 
-1. **Optimize Keywords**: Use job titles and skills from your resume
-2. **Set Realistic Locations**: Include remote and local options
-3. **Monitor Compatibility Scores**: Focus on jobs with 70+ scores
-4. **Review AI Analysis**: Read match reasons and skill gaps
-5. **Start with Manual Review**: Don't enable auto-apply immediately
-6. **Track Applications**: Monitor response rates and adjust strategy
+### Web Interface Not Starting
+```bash
+# Check if port 5000 is in use
+netstat -an | grep :5000
 
-## 📈 Next Steps
+# Start with different port
+FLASK_PORT=5001 python start_app.py
+```
 
-After setup:
-1. Run the system daily to find new jobs
-2. Review and refine your job search criteria
-3. Track which types of jobs get the best responses
-4. Optimize your resume based on AI feedback
-5. Consider enabling auto-apply for high-confidence matches
+### Common Error Messages
+- **"Resume file not found"**: Check file path in `config/config.yaml`
+- **"API key not configured"**: Add `GOOGLE_GEMINI_API_KEY` to `.env`
+- **"No jobs found"**: Normal if sources are down, will use sample data
+- **"JSON parsing failed"**: Gemini response format issue, fallback analysis used
+
+## 💡 Tips for Best Results
+
+### Resume Optimization
+- **Use clear formatting**: Simple layouts parse better than complex designs
+- **Include relevant keywords**: Match job posting terminology
+- **List specific technologies**: "Python, pandas, scikit-learn" vs. "programming"
+- **Quantify achievements**: "Increased efficiency by 25%" vs. "improved processes"
+
+### Job Search Configuration
+- **Specific keywords**: "data scientist" vs. "data professional"
+- **Multiple locations**: Include "Remote" + specific cities
+- **Realistic limits**: Start with 5-10 jobs per day
+- **Regular updates**: Refresh keywords based on market trends
+
+### Using AI Analysis
+- **Focus on 70+ scores**: Higher compatibility = better match
+- **Read skill gaps**: Identify areas for improvement
+- **Use cover letter suggestions**: AI provides personalized tips
+- **Review match reasons**: Understand why jobs are recommended
+
+### Application Strategy
+- **Start manual**: Review applications before enabling auto-apply
+- **Customize cover letters**: Use AI suggestions as starting point
+- **Track responses**: Monitor which job types get replies
+- **Iterate and improve**: Adjust keywords based on results
+
+## 📈 Advanced Usage
+
+### Custom Job Sources
+Extend `job_scraper.py` to add new job boards:
+```python
+def _scrape_custom_source(self):
+    # Add your custom scraping logic
+    return jobs_list
+```
+
+### AI Prompt Customization
+Modify `gemini_matcher.py` to customize analysis:
+```python
+def _create_analysis_prompt(self, resume_data, job):
+    # Customize the AI analysis prompt
+    return custom_prompt
+```
+
+### Database Extensions
+Add custom fields to `database_manager.py`:
+```sql
+ALTER TABLE job_postings ADD COLUMN custom_field TEXT;
+```
+
+### API Integration
+Connect to external systems via Flask routes in `web/app.py`:
+```python
+@app.route('/api/jobs')
+def api_jobs():
+    return jsonify(db_manager.get_matched_jobs())
+```
+
+## 📋 Requirements
+
+- **Python**: 3.8+ (tested on 3.9, 3.10, 3.11)
+- **Google Gemini API**: Requires active API key with billing
+- **Chrome Browser**: For web scraping (ChromeDriver auto-installed)
+- **Disk Space**: ~50MB for dependencies, ~10MB for data
+- **RAM**: ~512MB during scraping, ~256MB for web interface
 
 ---
 
-**Remember**: This is a powerful tool that interacts with real job platforms. Use it responsibly and always review applications before they are sent!
+**⚠️ Important**: This system is designed for personal job search assistance. Always review applications before submission and comply with platform terms of service.
